@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Group Report — FocusAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080B10;
+  --bg2:     #0D1117;
+  --bg3:     #121820;
+  --surface: #141B24;
+  --surface2:#1A2332;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text:    #F0F4FF;
+  --text2:   #8B96A8;
+  --text3:   #4A5568;
+  --cyan:    #00D4FF;
+  --violet:  #7C6FFF;
+  --green:   #00E5A0;
+  --amber:   #FFB547;
+  --red:     #FF5E5E;
+  --green-bg:rgba(0,229,160,0.07);
+  --red-bg:  rgba(255,94,94,0.07);
+  --amber-bg:rgba(255,181,71,0.07);
+  --cyan-bg: rgba(0,212,255,0.07);
+  --violet-bg:rgba(124,111,255,0.07);
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
+
+body{
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--bg);color:var(--text);
+  font-size:15px;line-height:1.6;
+  overflow-x:hidden;
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;z-index:0;
+}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:60px;
+  background:rgba(8,11,16,0.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Space Mono',monospace;
+  font-size:18px;font-weight:700;
+  color:var(--text);text-decoration:none;
+}
+.logo-mark{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  box-shadow:0 0 16px rgba(0,212,255,0.3);
+}
+.nav-right{display:flex;gap:12px;align-items:center}
+.nav-btn{
+  font-family:'Space Mono',monospace;
+  font-size:11px;letter-spacing:0.06em;
+  color:var(--text2);
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:7px 14px;border-radius:6px;
+  cursor:pointer;text-decoration:none;
+  transition:all .2s;
+}
+.nav-btn:hover{color:var(--cyan);border-color:rgba(0,212,255,0.3)}
+
+/* LAYOUT */
+.page{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px 80px}
+
+/* REPORT HEADER */
+.report-header{padding:48px 0 40px}
+.report-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:11px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:16px;
+}
+.report-title{
+  font-size:clamp(28px,4vw,42px);
+  font-weight:700;letter-spacing:-0.03em;
+  margin-bottom:8px;
+}
+.report-meta{
+  font-family:'Space Mono',monospace;
+  font-size:11px;color:var(--text3);
+  letter-spacing:0.05em;
+}
+
+/* SCORE BANNER */
+.score-banner{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:48px;
+  position:relative;
+}
+.score-banner::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),transparent);
+}
+.score-inner{
+  padding:32px 40px;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:32px;flex-wrap:wrap;
+}
+.score-num-wrap{}
+.score-label{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:6px;
+}
+.score-big{
+  font-family:'Space Mono',monospace;
+  font-size:72px;font-weight:700;line-height:1;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.score-big sub{font-size:28px;opacity:.4;vertical-align:baseline;-webkit-text-fill-color:var(--text3);background:none}
+.score-summary{flex:1;min-width:240px}
+.score-summary p{font-size:15px;color:var(--text2);line-height:1.7}
+.score-stats{
+  display:flex;gap:28px;flex-wrap:wrap;
+}
+.stat-box{text-align:center;min-width:60px}
+.stat-val{
+  font-family:'Space Mono',monospace;
+  font-size:26px;font-weight:700;color:var(--text);
+  line-height:1;margin-bottom:4px;
+}
+.stat-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text3);
+}
+
+/* SECTION HEADING */
+.sec-heading{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:24px;padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.sec-heading h2{
+  font-size:20px;font-weight:700;
+  letter-spacing:-0.02em;
+}
+.sec-tag{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:0.1em;color:var(--cyan);
+  background:rgba(0,212,255,0.08);
+  border:1px solid rgba(0,212,255,0.2);
+  padding:3px 8px;border-radius:4px;
+}
+.section{margin-bottom:56px}
+
+/* PERSONA CARDS */
+.personas-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:16px;
+}
+.persona-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  animation:card-in .4s ease both;
+}
+.persona-card:nth-child(1){animation-delay:.05s}
+.persona-card:nth-child(2){animation-delay:.10s}
+.persona-card:nth-child(3){animation-delay:.15s}
+.persona-card:nth-child(4){animation-delay:.20s}
+.persona-card:nth-child(5){animation-delay:.25s}
+@keyframes card-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.persona-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+}
+.persona-stripe{height:3px}
+.p-card-head{
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;
+  justify-content:space-between;gap:10px;
+}
+.p-id{display:flex;align-items:center;gap:10px}
+.p-emoji{font-size:26px}
+.p-name{font-size:15px;font-weight:700;letter-spacing:-0.01em}
+.p-type{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:0.06em;color:var(--text3);
+}
+.scroll-badge{
+  font-family:'Space Mono',monospace;
+  font-size:9px;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:4px 10px;border-radius:100px;
+  white-space:nowrap;flex-shrink:0;
+}
+.scroll-yes{
+  background:var(--green-bg);color:var(--green);
+  border:1px solid rgba(0,229,160,0.2);
+}
+.scroll-no{
+  background:var(--red-bg);color:var(--red);
+  border:1px solid rgba(255,94,94,0.2);
+}
+
+.p-card-body{padding:18px 20px 20px}
+
+/* SCORE BARS */
+.score-bars{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;margin-bottom:16px;
+}
+.bar-item{text-align:center}
+.bar-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;text-transform:uppercase;
+  letter-spacing:0.08em;color:var(--text3);
+  margin-bottom:6px;
+}
+.bar-track{
+  height:4px;background:var(--bg3);
+  border-radius:100px;overflow:hidden;margin-bottom:5px;
+}
+.bar-fill{height:100%;border-radius:100px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.fill-a{background:linear-gradient(90deg,var(--amber),#FF8C00)}
+.fill-t{background:linear-gradient(90deg,var(--green),#00B87A)}
+.fill-i{background:linear-gradient(90deg,var(--violet),#5A4FCC)}
+.bar-val{
+  font-family:'Space Mono',monospace;
+  font-size:14px;font-weight:700;
+}
+
+.reaction-text{
+  font-size:13px;color:var(--text2);
+  margin-bottom:14px;line-height:1.55;
+}
+.objection-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--red);margin-bottom:4px;
+}
+.objection-text{
+  font-size:13px;color:var(--text2);
+  margin-bottom:14px;line-height:1.5;
+}
+.quote-block{
+  background:var(--bg2);
+  border-left:2px solid var(--border2);
+  border-radius:0 6px 6px 0;
+  padding:10px 14px;
+  font-size:13px;font-style:italic;
+  color:var(--text2);line-height:1.55;
+}
+
+/* MODERATOR */
+.moderator-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+}
+.mod-head{
+  padding:28px 36px;
+  background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,111,255,0.06));
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;
+}
+.mod-icon{font-size:32px}
+.mod-head-text h3{
+  font-size:20px;font-weight:700;letter-spacing:-0.02em;
+  margin-bottom:2px;
+}
+.mod-head-text p{font-size:13px;color:var(--text2)}
+.mod-body{padding:32px 36px}
+
+.signal-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:20px;
+}
+.signal-block{
+  border-radius:10px;padding:18px;
+  border:1px solid transparent;
+}
+.sig-positive{
+  background:var(--green-bg);
+  border-color:rgba(0,229,160,0.15);
+}
+.sig-negative{
+  background:var(--red-bg);
+  border-color:rgba(255,94,94,0.15);
+}
+.sig-angle{
+  grid-column:1/-1;
+  background:rgba(124,111,255,0.06);
+  border-color:rgba(124,111,255,0.2);
+}
+.sig-cyan{
+  background:var(--cyan-bg);
+  border-color:rgba(0,212,255,0.15);
+}
+.sig-amber{
+  background:var(--amber-bg);
+  border-color:rgba(255,181,71,0.15);
+}
+.sig-label{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.sig-positive .sig-label{color:var(--green)}
+.sig-negative .sig-label{color:var(--red)}
+.sig-angle .sig-label{color:var(--violet)}
+.sig-cyan .sig-label{color:var(--cyan)}
+.sig-amber .sig-label{color:var(--amber)}
+.signal-block p{font-size:14px;color:var(--text);line-height:1.55}
+.sig-angle p{
+  font-size:18px;font-style:italic;font-weight:500;
+  color:var(--text);line-height:1.4;
+}
+
+.lists-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:20px;
+}
+.list-block{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;padding:18px;
+}
+.list-block-title{
+  font-size:13px;font-weight:700;
+  letter-spacing:-0.01em;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.list-items{display:flex;flex-direction:column;gap:8px}
+.list-item{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:13px;color:var(--text2);line-height:1.5;
+}
+.li-dot{
+  width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;flex-shrink:0;margin-top:1px;
+}
+.d-green{background:var(--green-bg);color:var(--green)}
+.d-red{background:var(--red-bg);color:var(--red)}
+.d-cyan{background:var(--cyan-bg);color:var(--cyan)}
+.d-amber{background:var(--amber-bg);color:var(--amber)}
+
+.risks-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:20px;
+}
+.risk-block{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:18px;
+}
+.risk-title{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--text2);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.risk-block p{font-size:13px;color:var(--text2);line-height:1.55}
+
+.agree-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:0;
+}
+
+/* NO DATA */
+.no-data{
+  min-height:80vh;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;text-align:center;
+}
+.no-data p{font-size:16px;color:var(--text2)}
+.no-data a{color:var(--cyan);text-decoration:none}
+.no-data a:hover{text-decoration:underline}
+
+@media(max-width:640px){
+  nav{padding:0 20px}
+  .score-inner{padding:24px 20px}
+  .score-big{font-size:52px}
+  .signal-row,.lists-row,.risks-row,.agree-row{grid-template-columns:1fr}
+  .sig-angle{grid-column:1}
+  .mod-body{padding:20px}
+  .mod-head{padding:20px}
+  .personas-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <span class="logo-mark">◈</span>
+    FocusAI
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-btn">← NEW ANALYSIS</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div id="reportContent">
+    <div class="no-data">
+      <p>Loading report...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function scoreColor(v) {
+  if (v >= 7) return 'var(--green)';
+  if (v >= 5) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function avg(arr, key) {
+  return (arr.reduce(function(s,r){return s+(r[key]||0)},0)/arr.length).toFixed(1);
+}
+
+function renderItems(items, dotClass, sym) {
+  if (!items || !items.length) return '<div class="list-item"><span style="color:var(--text3)">—</span></div>';
+  return items.map(function(it){
+    return '<div class="list-item"><span class="li-dot '+dotClass+'">'+sym+'</span><span>'+it+'</span></div>';
+  }).join('');
+}
+
+function renderPersonaCard(r) {
+  var p = r.persona;
+  var color = p.color || '#7C6FFF';
+  var stop = r.would_stop_scrolling;
+  var av = r.attention_score || 5;
+  var tv = r.trust_score     || 5;
+  var iv = r.interest_score  || 5;
+  return [
+    '<div class="persona-card">',
+      '<div class="persona-stripe" style="background:'+color+'"></div>',
+      '<div class="p-card-head">',
+        '<div class="p-id">',
+          '<span class="p-emoji">'+p.emoji+'</span>',
+          '<div>',
+            '<div class="p-name">'+p.name+'</div>',
+            '<div class="p-type">'+p.label.toUpperCase()+'</div>',
+          '</div>',
+        '</div>',
+        '<span class="scroll-badge '+(stop?'scroll-yes':'scroll-no')+'">',
+          stop ? '▶ WOULD STOP' : '✕ SCROLLS PAST',
+        '</span>',
+      '</div>',
+      '<div class="p-card-body">',
+        '<div class="score-bars">',
+          '<div class="bar-item"><div class="bar-label">Attention</div><div class="bar-track"><div class="bar-fill fill-a" style="width:'+av*10+'%"></div></div><div class="bar-val" style="color:'+scoreColor(av)+'">'+av+'</div></div>',
+          '<div class="bar-item"><div class="bar-label">Trust</div><div class="bar-track"><div class="bar-fill fill-t" style="width:'+tv*10+'%"></div></div><div class="bar-val" style="color:'+scoreColor(tv)+'">'+tv+'</div></div>',
+          '<div class="bar-item"><div class="bar-label">Interest</div><div class="bar-track"><div class="bar-fill fill-i" style="width:'+iv*10+'%"></div></div><div class="bar-val" style="color:'+scoreColor(iv)+'">'+iv+'</div></div>',
+        '</div>',
+        '<div class="reaction-text">'+(r.first_reaction||'')+'</div>',
+        '<div class="objection-label">⚠ MAIN OBJECTION</div>',
+        '<div class="objection-text">'+(r.main_objection||'')+'</div>',
+        '<div class="quote-block">"'+(r.quote||'')+'"</div>',
+      '</div>',
+    '</div>'
+  ].join('');
+}
+
+function renderReport(data) {
+  var personas  = data.personas;
+  var m         = data.moderator;
+  var stopCount = personas.filter(function(r){return r.would_stop_scrolling}).length;
+  var avgA = avg(personas,'attention_score');
+  var avgT = avg(personas,'trust_score');
+  var avgI = avg(personas,'interest_score');
+
+  var html = [
+    '<div class="report-header">',
+      '<div class="report-eyebrow">// FOCUS GROUP REPORT</div>',
+      '<div class="report-title">Ad Analysis Complete</div>',
+      '<div class="report-meta">'+personas.length+' PERSONAS QUERIED &nbsp;·&nbsp; GENERATED '+new Date().toLocaleTimeString()+'</div>',
+    '</div>',
+
+    '<div class="score-banner">',
+      '<div class="score-inner">',
+        '<div class="score-num-wrap">',
+          '<div class="score-label">OVERALL SCORE</div>',
+          '<div class="score-big">'+(m.final_score||'—')+'<sub>/10</sub></div>',
+        '</div>',
+        '<div class="score-summary"><p>'+(m.executive_summary||'')+'</p></div>',
+        '<div class="score-stats">',
+          '<div class="stat-box"><div class="stat-val" style="color:'+scoreColor(parseFloat(avgA))+'">'+avgA+'</div><div class="stat-label">Attention</div></div>',
+          '<div class="stat-box"><div class="stat-val" style="color:'+scoreColor(parseFloat(avgT))+'">'+avgT+'</div><div class="stat-label">Trust</div></div>',
+          '<div class="stat-box"><div class="stat-val" style="color:'+scoreColor(parseFloat(avgI))+'">'+avgI+'</div><div class="stat-label">Interest</div></div>',
+          '<div class="stat-box"><div class="stat-val">'+stopCount+'/5</div><div class="stat-label">Stop Scroll</div></div>',
+        '</div>',
+      '</div>',
+    '</div>',
+
+    '<div class="section">',
+      '<div class="sec-heading"><h2>Persona Reactions</h2><span class="sec-tag">5 CONSUMERS</span></div>',
+      '<div class="personas-grid">',
+        personas.map(renderPersonaCard).join(''),
+      '</div>',
+    '</div>',
+
+    '<div class="section">',
+      '<div class="sec-heading"><h2>Moderator Report</h2><span class="sec-tag">AI SYNTHESIS</span></div>',
+      '<div class="moderator-card">',
+        '<div class="mod-head">',
+          '<span class="mod-icon">🎯</span>',
+          '<div class="mod-head-text">',
+            '<h3>Senior Moderator Analysis</h3>',
+            '<p>Synthesized from all 5 persona responses</p>',
+          '</div>',
+        '</div>',
+        '<div class="mod-body">',
+
+          '<div class="signal-row">',
+            '<div class="signal-block sig-positive"><div class="sig-label">Strongest Signal ↑</div><p>'+(m.strongest_positive||'—')+'</p></div>',
+            '<div class="signal-block sig-negative"><div class="sig-label">Biggest Risk ↓</div><p>'+(m.strongest_negative||'—')+'</p></div>',
+          '</div>',
+
+          '<div class="lists-row">',
+            '<div class="list-block">',
+              '<div class="list-block-title">✅ Likely Strengths</div>',
+              '<div class="list-items">'+renderItems(m.likely_strengths,'d-green','✓')+'</div>',
+            '</div>',
+            '<div class="list-block">',
+              '<div class="list-block-title">⚠ Likely Weaknesses</div>',
+              '<div class="list-items">'+renderItems(m.likely_weaknesses,'d-red','!')+'</div>',
+            '</div>',
+          '</div>',
+
+          '<div class="risks-row">',
+            '<div class="risk-block"><div class="risk-title">⚡ ATTENTION RISKS</div><p>'+(m.attention_risks||'—')+'</p></div>',
+            '<div class="risk-block"><div class="risk-title">🔒 TRUST RISKS</div><p>'+(m.trust_risks||'—')+'</p></div>',
+          '</div>',
+
+          '<div class="lists-row" style="margin-bottom:20px">',
+            '<div class="list-block">',
+              '<div class="list-block-title">💡 Recommended Improvements</div>',
+              '<div class="list-items">'+renderItems(m.recommended_improvements,'d-cyan','→')+'</div>',
+            '</div>',
+            '<div class="list-block">',
+              '<div class="list-block-title">💬 Points of Disagreement</div>',
+              '<div class="list-items">'+renderItems(m.main_disagreements,'d-amber','·')+'</div>',
+            '</div>',
+          '</div>',
+
+          '<div class="signal-row">',
+            '<div class="signal-block sig-cyan"><div class="sig-label">Main Agreements</div><div class="list-items" style="margin-top:4px">'+renderItems(m.main_agreements,'d-cyan','·')+'</div></div>',
+            '<div class="signal-block sig-angle"><div class="sig-label">Suggested Ad Angle to Test</div><p>'+(m.suggested_angle||'—')+'</p></div>',
+          '</div>',
+
+        '</div>',
+      '</div>',
+    '</div>'
+  ].join('');
+
+  document.getElementById('reportContent').innerHTML = html;
+
+  // Animate bars after render
+  setTimeout(function() {
+    document.querySelectorAll('.bar-fill').forEach(function(bar) {
+      var w = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(function(){ bar.style.width = w; }, 150);
+    });
+  }, 100);
+}
+
+var raw = sessionStorage.getItem('focusGroupResult');
+if (raw) {
+  try { renderReport(JSON.parse(raw)); }
+  catch(e) {
+    document.getElementById('reportContent').innerHTML =
+      '<div class="no-data"><p>Error rendering report.</p><p><a href="/">Run a new analysis</a></p></div>';
+  }
+} else {
+  document.getElementById('reportContent').innerHTML =
+    '<div class="no-data"><p>No report data found.</p><p><a href="/">Run an analysis first</a></p></div>';
+}
+</script>
+</body>
+</html>
