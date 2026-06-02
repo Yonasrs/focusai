@@ -234,7 +234,7 @@ async def generate_moderator_report(client: OpenAI, persona_results: list, ad_co
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.post("/analyze")
@@ -283,4 +283,4 @@ async def analyze(
 
 @app.get("/report", response_class=HTMLResponse)
 async def report(request: Request):
-    return templates.TemplateResponse("report.html", {"request": request})
+    return templates.TemplateResponse(request, "report.html")
