@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FocusAI — Test Your Ad With a Synthetic Focus Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F4EF;
+    --bg2: #EDE9E2;
+    --surface: #FFFFFF;
+    --border: #DDD8CF;
+    --text: #1A1714;
+    --text2: #5C5650;
+    --text3: #8C877F;
+    --accent: #C84B2F;
+    --accent2: #E8A87C;
+    --accent-soft: #FBF0EB;
+    --green: #2B7A5C;
+    --radius: 16px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .logo-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .nav-badge {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid rgba(200,75,47,0.2);
+  }
+
+  /* HERO */
+  .hero {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 80px 24px 48px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero-eyebrow span {
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--text3);
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(38px, 6vw, 60px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+    font-weight: 400;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text2);
+    max-width: 540px;
+    margin: 0 auto 48px;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  /* PERSONA AVATARS ROW */
+  .personas-preview {
+    display: flex;
+    justify-content: center;
+    gap: -8px;
+    margin-bottom: 56px;
+  }
+
+  .avatar-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px 8px 10px;
+    font-size: 13px;
+    color: var(--text2);
+    box-shadow: var(--shadow);
+    animation: float-in 0.5s ease both;
+  }
+
+  .avatar-chip:nth-child(1) { animation-delay: 0.1s; }
+  .avatar-chip:nth-child(2) { animation-delay: 0.2s; }
+  .avatar-chip:nth-child(3) { animation-delay: 0.3s; }
+  .avatar-chip:nth-child(4) { animation-delay: 0.4s; }
+  .avatar-chip:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar-emoji { font-size: 20px; }
+
+  .personas-preview-wrap {
+    margin-bottom: 56px;
+  }
+
+  .personas-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .personas-caption {
+    font-size: 13px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  /* UPLOAD CARD */
+  .upload-section {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  .upload-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .upload-card h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .upload-card .card-sub {
+    font-size: 14px;
+    color: var(--text3);
+    margin-bottom: 32px;
+  }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .drop-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .drop-hint {
+    font-size: 13px;
+    color: var(--text3);
+  }
+
+  .drop-preview {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .drop-preview img {
+    max-height: 200px;
+    max-width: 100%;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  .drop-preview-name {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* FORM FIELDS */
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  .field .optional {
+    font-weight: 400;
+    color: var(--text3);
+    font-size: 12px;
+    margin-left: 6px;
+  }
+
+  .field textarea,
+  .field input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+
+  .field textarea:focus,
+  .field input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,75,47,0.08);
+  }
+
+  /* SUBMIT */
+  .submit-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    background: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(200,75,47,0.25);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .submit-btn .btn-icon { font-size: 20px; }
+
+  /* LOADING STATE */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(247,244,239,0.95);
+    z-index: 999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .loading-overlay.active { display: flex; }
+
+  .loading-personas {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .loading-persona-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: var(--text2);
+    transition: all 0.3s ease;
+    opacity: 0.4;
+  }
+
+  .loading-persona-chip.active {
+    opacity: 1;
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(200,75,47,0.12);
+  }
+
+  .loading-persona-chip.done {
+    opacity: 1;
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .loading-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .loading-sub {
+    font-size: 15px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  /* DIVIDER */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 32px 0;
+    color: var(--text3);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 64px 24px;
+  }
+
+  .how-inner {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .how-inner h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .how-inner .how-sub {
+    text-align: center;
+    color: var(--text3);
+    font-size: 15px;
+    margin-bottom: 48px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+  }
+
+  .step-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 40px;
+    color: var(--border);
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+
+  /* ERROR */
+  .error-msg {
+    display: none;
+    background: #FEF2F0;
+    border: 1px solid rgba(200,75,47,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--accent);
+    margin-top: 16px;
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 48px 20px 32px; }
+    .upload-card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <span class="logo-dot"></span>
+    FocusAI
+  </a>
+  <span class="nav-badge">Beta</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">
+    <span></span>
+    Synthetic Focus Group
+    <span></span>
+  </div>
+  <h1>Test your ad before<br><em>anyone sees it</em></h1>
+  <p class="hero-sub">Upload your advertisement and get instant reactions from five distinct consumer personalities — before you spend a dollar on media.</p>
+
+  <div class="personas-preview-wrap">
+    <div class="personas-row">
+      <div class="avatar-chip"><span class="avatar-emoji">🤨</span> Jordan, The Skeptic</div>
+      <div class="avatar-chip"><span class="avatar-emoji">💫</span> Maya, Emotional Buyer</div>
+      <div class="avatar-chip"><span class="avatar-emoji">📊</span> David, Rational Buyer</div>
+    </div>
+    <div class="personas-row">
+      <div class="avatar-chip"><span class="avatar-emoji">✨</span> Zoe, Trend Chaser</div>
+      <div class="avatar-chip"><span class="avatar-emoji">🎯</span> Robert, Value-Conscious</div>
+    </div>
+    <p class="personas-caption">Five real-feeling consumer perspectives. Instant feedback.</p>
+  </div>
+</div>
+
+<div class="upload-section">
+  <div class="upload-card">
+    <h2>Upload your ad</h2>
+    <p class="card-sub">We'll simulate your focus group in about 30 seconds.</p>
+
+    <form id="uploadForm">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="imageInput" name="image" accept="image/*" required>
+        <span class="drop-icon">🖼️</span>
+        <div class="drop-title">Drop your ad here</div>
+        <div class="drop-hint">PNG, JPG, GIF, WEBP · Up to 10MB</div>
+        <div class="drop-preview" id="dropPreview">
+          <img id="previewImg" src="" alt="Preview">
+          <div class="drop-preview-name" id="previewName"></div>
+        </div>
+      </div>
+
+      <div class="section-divider">Optional context</div>
+
+      <div class="field">
+        <label>Ad copy <span class="optional">optional</span></label>
+        <textarea name="ad_copy" placeholder="Paste the headline, body copy, or CTA text from your ad..." rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Target audience <span class="optional">optional</span></label>
+        <input type="text" name="target_audience" placeholder="e.g. Women 25–40 interested in fitness and wellness">
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        <span class="btn-icon">👥</span>
+        Run Focus Group
+      </button>
+
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+  </div>
+</div>
+
+<div class="how-section">
+  <div class="how-inner">
+    <h3>How it works</h3>
+    <p class="how-sub">No agencies. No recruitment. No waiting weeks for results.</p>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">Upload your ad</div>
+        <div class="step-desc">Drop in any image ad — display, social, or print. Add optional context to improve accuracy.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">AI simulates 5 consumers</div>
+        <div class="step-desc">Each persona has distinct values, trust signals, and attention triggers that shape their reaction.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">Get the report</div>
+        <div class="step-desc">A senior moderator synthesizes all feedback into a clear, actionable executive summary.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-title">Gathering your focus group…</div>
+  <div class="loading-sub" id="loadingStatus">Assembling the panel</div>
+  <div class="loading-personas" id="loadingPersonas">
+    <div class="loading-persona-chip" id="chip-skeptic">🤨 Jordan</div>
+    <div class="loading-persona-chip" id="chip-emotional">💫 Maya</div>
+    <div class="loading-persona-chip" id="chip-rational">📊 David</div>
+    <div class="loading-persona-chip" id="chip-trendy">✨ Zoe</div>
+    <div class="loading-persona-chip" id="chip-conservative">🎯 Robert</div>
+  </div>
+</div>
+
+<script>
+  const imageInput = document.getElementById('imageInput');
+  const dropZone = document.getElementById('dropZone');
+  const dropPreview = document.getElementById('dropPreview');
+  const previewImg = document.getElementById('previewImg');
+  const previewName = document.getElementById('previewName');
+  const submitBtn = document.getElementById('submitBtn');
+  const uploadForm = document.getElementById('uploadForm');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingStatus = document.getElementById('loadingStatus');
+  const errorMsg = document.getElementById('errorMsg');
+
+  imageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      previewImg.src = url;
+      previewName.textContent = '✓ ' + file.name;
+      dropPreview.style.display = 'block';
+      submitBtn.disabled = false;
+    }
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      imageInput.files = dt.files;
+      const url = URL.createObjectURL(file);
+      previewImg.src = url;
+      previewName.textContent = '✓ ' + file.name;
+      dropPreview.style.display = 'block';
+      submitBtn.disabled = false;
+    }
+  });
+
+  const chips = ['skeptic', 'emotional', 'rational', 'trendy', 'conservative'];
+  const statuses = [
+    'Asking Jordan for their gut reaction…',
+    'Maya is thinking about how this makes her feel…',
+    'David is running the numbers…',
+    'Zoe is checking if this is trending…',
+    'Robert wants to know if it's worth it…',
+    'Moderator is synthesizing feedback…'
+  ];
+
+  function animateLoading() {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < chips.length) {
+        if (i > 0) {
+          document.getElementById('chip-' + chips[i-1]).classList.remove('active');
+          document.getElementById('chip-' + chips[i-1]).classList.add('done');
+        }
+        document.getElementById('chip-' + chips[i]).classList.add('active');
+        loadingStatus.textContent = statuses[i];
+      } else {
+        clearInterval(interval);
+        loadingStatus.textContent = statuses[5];
+        document.getElementById('chip-' + chips[chips.length-1]).classList.remove('active');
+        document.getElementById('chip-' + chips[chips.length-1]).classList.add('done');
+      }
+      i++;
+    }, 4500);
+  }
+
+  uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+
+    loadingOverlay.classList.add('active');
+    chips.forEach(c => {
+      document.getElementById('chip-' + c).className = 'loading-persona-chip';
+    });
+    animateLoading();
+
+    const formData = new FormData(uploadForm);
+
+    try {
+      const resp = await fetch('/analyze', { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error('Server error: ' + resp.status);
+      const data = await resp.json();
+      sessionStorage.setItem('focusGroupResult', JSON.stringify(data));
+      window.location.href = '/report';
+    } catch (err) {
+      loadingOverlay.classList.remove('active');
+      errorMsg.textContent = 'Something went wrong: ' + err.message;
+      errorMsg.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
