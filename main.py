@@ -2,7 +2,7 @@ import os
 import base64
 import json
 import re
-from fastapi import FastAPI, File, UploadFile, Form, Request
+from fastapi import FastAPI, File, UploadFile, Form, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from openai import OpenAI
@@ -14,11 +14,17 @@ load_dotenv()
 app = FastAPI(title="Autonomous AI Focus Group")
 templates = Jinja2Templates(directory="templates")
 
-_api_key = os.getenv("OPENAI_API_KEY")
-if not _api_key:
-    raise RuntimeError("OPENAI_API_KEY environment variable is not set.")
 
-client = OpenAI(api_key=_api_key)
+def get_client() -> OpenAI:
+    """Create OpenAI client at request time so missing key crashes the request, not the server."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY is not configured. Add it in Render → Environment Variables."
+        )
+    return OpenAI(api_key=api_key)
+
 
 PERSONAS = [
     {
@@ -157,16 +163,16 @@ def encode_image(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode("utf-8")
 
 
-async def analyze_persona(persona: dict, image_b64: str, image_type: str, ad_copy: str, target_audience: str) -> dict:
-    user_content = []
-
-    user_content.append({
-        "type": "image_url",
-        "image_url": {
-            "url": f"data:{image_type};base64,{image_b64}",
-            "detail": "high"
+async def analyze_persona(client: OpenAI, persona: dict, image_b64: str, image_type: str, ad_copy: str, target_audience: str) -> dict:
+    user_content = [
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:{image_type};base64,{image_b64}",
+                "detail": "high"
+            }
         }
-    })
+    ]
 
     context_parts = [persona["prompt"]]
     if ad_copy:
@@ -174,10 +180,7 @@ async def analyze_persona(persona: dict, image_b64: str, image_type: str, ad_cop
     if target_audience:
         context_parts.append(f"\nTarget audience: {target_audience}")
 
-    user_content.append({
-        "type": "text",
-        "text": "\n".join(context_parts)
-    })
+    user_content.append({"type": "text", "text": "\n".join(context_parts)})
 
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -187,7 +190,6 @@ async def analyze_persona(persona: dict, image_b64: str, image_type: str, ad_cop
     )
 
     raw = response.choices[0].message.content.strip()
-    # Strip markdown code blocks if present
     raw = re.sub(r'^```json\s*', '', raw)
     raw = re.sub(r'\s*```$', '', raw)
     result = json.loads(raw)
@@ -195,7 +197,7 @@ async def analyze_persona(persona: dict, image_b64: str, image_type: str, ad_cop
     return result
 
 
-async def generate_moderator_report(persona_results: list, ad_copy: str, target_audience: str) -> dict:
+async def generate_moderator_report(client: OpenAI, persona_results: list, ad_copy: str, target_audience: str) -> dict:
     feedback_text = json.dumps([
         {
             "persona": r["persona"]["label"],
@@ -241,6 +243,7 @@ async def analyze(
     ad_copy: Optional[str] = Form(default=""),
     target_audience: Optional[str] = Form(default="")
 ):
+    client = get_client()
     image_bytes = await image.read()
     image_b64 = encode_image(image_bytes)
     content_type = image.content_type or "image/jpeg"
@@ -248,8 +251,10 @@ async def analyze(
     persona_results = []
     for persona in PERSONAS:
         try:
-            result = await analyze_persona(persona, image_b64, content_type, ad_copy, target_audience)
+            result = await analyze_persona(client, persona, image_b64, content_type, ad_copy, target_audience)
             persona_results.append(result)
+        except HTTPException:
+            raise
         except Exception as e:
             persona_results.append({
                 "persona": persona,
@@ -264,7 +269,9 @@ async def analyze(
             })
 
     try:
-        moderator = await generate_moderator_report(persona_results, ad_copy, target_audience)
+        moderator = await generate_moderator_report(client, persona_results, ad_copy, target_audience)
+    except HTTPException:
+        raise
     except Exception as e:
         moderator = {"error": str(e), "executive_summary": "Moderator analysis failed."}
 
