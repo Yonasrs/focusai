@@ -10,10 +10,11 @@ from dotenv import load_dotenv
 from typing import Optional
 
 from personas import PERSONAS, build_persona_prompt, DEBATE_PROMPT, MODERATOR_PROMPT_V2
+from copy_analysis import COPY_ANALYSIS_PROMPT, compute_confidence
 
 load_dotenv()
 
-app = FastAPI(title="Autonomous AI Focus Group v2")
+app = FastAPI(title="Autonomous AI Focus Group v3")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -28,7 +29,6 @@ def get_client() -> OpenAI:
 
 
 def clean_json(raw: str) -> str:
-    """Strip markdown fences and extract the first JSON object/array."""
     raw = raw.strip()
     raw = re.sub(r'^```json\s*', '', raw)
     raw = re.sub(r'^```\s*', '', raw)
@@ -65,8 +65,8 @@ async def analyze_persona(
                 {"type": "text", "text": prompt}
             ]
         }],
-        max_tokens=600,
-        temperature=0.9   # higher temp = more personality differentiation
+        max_tokens=700,
+        temperature=0.9
     )
 
     raw = clean_json(response.choices[0].message.content)
@@ -75,17 +75,49 @@ async def analyze_persona(
     return result
 
 
-async def generate_debate(
+async def analyze_copy(
     client: OpenAI,
-    persona_results: list
+    image_b64: str,
+    image_type: str,
+    ad_copy: str
 ) -> dict:
-    """Generate an inter-persona debate based on their individual reactions."""
+    """
+    Copy Intelligence Engine — runs in parallel with persona analysis.
+    Analyzes spelling, grammar, tone, persuasion, and claim quality.
+    """
+    prompt = COPY_ANALYSIS_PROMPT.format(ad_copy=ad_copy or "Not provided")
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{image_type};base64,{image_b64}",
+                        "detail": "high"
+                    }
+                },
+                {"type": "text", "text": prompt}
+            ]
+        }],
+        max_tokens=1200,
+        temperature=0.2   # low temp = consistent, auditable copy analysis
+    )
+
+    raw = clean_json(response.choices[0].message.content)
+    return json.loads(raw)
+
+
+async def generate_debate(client: OpenAI, persona_results: list) -> dict:
     feedback_text = json.dumps([
         {
             "name": r["persona"]["name"],
             "archetype": r["persona"]["label"],
             "attention_score": r.get("attention_score"),
             "trust_score": r.get("trust_score"),
+            "trust_factors_used": r.get("trust_factors_used", ""),
             "interest_score": r.get("interest_score"),
             "would_stop_scrolling": r.get("would_stop_scrolling"),
             "visual_evidence_found": r.get("visual_evidence_found", "not evaluated"),
@@ -113,6 +145,8 @@ async def generate_moderator_report(
     client: OpenAI,
     persona_results: list,
     debate: dict,
+    copy_analysis: dict,
+    confidence: dict,
     ad_copy: str,
     target_audience: str
 ) -> dict:
@@ -121,8 +155,12 @@ async def generate_moderator_report(
             "name": r["persona"]["name"],
             "archetype": r["persona"]["label"],
             "attention_score": r.get("attention_score"),
+            "attention_reason": r.get("attention_reason", ""),
             "trust_score": r.get("trust_score"),
+            "trust_reason": r.get("trust_reason", ""),
+            "trust_factors_used": r.get("trust_factors_used", ""),
             "interest_score": r.get("interest_score"),
+            "interest_reason": r.get("interest_reason", ""),
             "would_stop_scrolling": r.get("would_stop_scrolling"),
             "visual_evidence_found": r.get("visual_evidence_found", "not evaluated"),
             "main_objection": r.get("main_objection"),
@@ -132,11 +170,15 @@ async def generate_moderator_report(
         for r in persona_results
     ], indent=2)
 
-    debate_text = json.dumps(debate, indent=2)
+    debate_text    = json.dumps(debate, indent=2)
+    copy_text      = json.dumps(copy_analysis, indent=2)
+    confidence_text = json.dumps(confidence, indent=2)
 
     prompt = MODERATOR_PROMPT_V2.format(
         persona_feedback=feedback_text,
         debate_transcript=debate_text,
+        copy_summary=copy_text,
+        confidence_summary=confidence_text,
         ad_copy=ad_copy or "Not provided",
         target_audience=target_audience or "Not specified"
     )
@@ -144,8 +186,8 @@ async def generate_moderator_report(
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=1200,
-        temperature=0.4   # low temp = consistent, decisive moderator
+        max_tokens=1400,
+        temperature=0.4
     )
 
     raw = clean_json(response.choices[0].message.content)
@@ -164,11 +206,11 @@ async def analyze(
     target_audience: Optional[str] = Form(default="")
 ):
     client = get_client()
-    image_bytes = await image.read()
-    image_b64 = encode_image(image_bytes)
+    image_bytes  = await image.read()
+    image_b64    = encode_image(image_bytes)
     content_type = image.content_type or "image/jpeg"
 
-    # Step 1 — run all 5 personas
+    # ── Step 1: 5 persona analyses ──────────────────────────────
     persona_results = []
     for persona in PERSONAS:
         try:
@@ -182,28 +224,49 @@ async def analyze(
             persona_results.append({
                 "persona": persona,
                 "error": str(e),
-                "first_reaction": "Analysis failed for this persona.",
-                "attention_score": 5,
-                "trust_score": 5,
-                "interest_score": 5,
+                "first_reaction": "Analysis failed.",
+                "attention_score": 5, "attention_reason": "Error",
+                "trust_score": 5,    "trust_reason": "Error",
+                "interest_score": 5, "interest_reason": "Error",
                 "would_stop_scrolling": False,
                 "main_objection": "Could not analyze.",
-                "quote": "..."
+                "quote": "...",
+                "trust_factors_used": "unavailable",
+                "visual_evidence_found": "unavailable"
             })
 
-    # Step 2 — generate debate
+    # ── Step 2: Copy Intelligence (parallel-safe, independent) ──
+    try:
+        copy_result = await analyze_copy(client, image_b64, content_type, ad_copy)
+    except Exception as e:
+        copy_result = {
+            "copy_clean": None,
+            "copy_quality_score": None,
+            "error": str(e),
+            "issues_found": [],
+            "persuasion_score": None,
+            "readability_score": None,
+            "claim_quality": "unknown"
+        }
+
+    # ── Step 3: Confidence Engine (zero API calls — pure math) ──
+    confidence = compute_confidence(persona_results)
+
+    # ── Step 4: Debate ───────────────────────────────────────────
     try:
         debate = await generate_debate(client, persona_results)
     except Exception as e:
         debate = {
-            "exchanges": [{"speaker": "System", "line": f"Debate generation failed: {str(e)}"}],
+            "exchanges": [{"speaker": "System", "line": f"Debate failed: {str(e)}"}],
             "debate_summary": "Debate unavailable."
         }
 
-    # Step 3 — moderator synthesizes everything
+    # ── Step 5: Moderator synthesizes everything ─────────────────
     try:
         moderator = await generate_moderator_report(
-            client, persona_results, debate, ad_copy, target_audience
+            client, persona_results, debate,
+            copy_result, confidence,
+            ad_copy, target_audience
         )
     except HTTPException:
         raise
@@ -215,9 +278,11 @@ async def analyze(
         }
 
     return JSONResponse({
-        "personas": persona_results,
-        "debate": debate,
-        "moderator": moderator
+        "personas":      persona_results,
+        "copy_analysis": copy_result,
+        "confidence":    confidence,
+        "debate":        debate,
+        "moderator":     moderator
     })
 
 
