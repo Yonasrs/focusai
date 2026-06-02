@@ -1,0 +1,143 @@
+# FocusAI — Autonomous AI Focus Group
+
+Test your advertisements with a synthetic focus group before you spend a dollar on media.
+
+## What it does
+
+Upload an ad image → five distinct AI consumer personas react to it → a senior moderator synthesizes the feedback into an actionable report.
+
+**Personas:**
+- 🤨 **Jordan** — The Skeptic (suspicious, trust-sensitive)
+- 💫 **Maya** — The Emotional Buyer (feeling-driven)
+- 📊 **David** — The Rational Buyer (logic and value oriented)
+- ✨ **Zoe** — The Trend Chaser (social-media savvy)
+- 🎯 **Robert** — The Value-Conscious (practical, risk-averse)
+
+**Each persona returns:**
+- First reaction, attention/trust/interest scores
+- Whether they'd stop scrolling
+- Main objection and a realistic quote
+
+**Moderator report includes:**
+- Executive summary + final score
+- Strongest positive/negative signals
+- Strengths, weaknesses, attention/trust risks
+- Recommended improvements + suggested new ad angle
+
+---
+
+## Local Setup
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/your-org/focusai.git
+cd focusai
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment
+
+```bash
+cp .env.example .env
+# Edit .env and add your OpenAI API key
+```
+
+### 5. Run the app
+
+```bash
+uvicorn main:app --reload
+```
+
+Open http://localhost:8000
+
+---
+
+## Deploy on Render
+
+### 1. Push to GitHub
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git remote add origin https://github.com/your-org/focusai.git
+git push -u origin main
+```
+
+### 2. Create a new Web Service on Render
+
+- Go to https://render.com → New → Web Service
+- Connect your GitHub repo
+- Configure:
+
+| Setting | Value |
+|---------|-------|
+| **Runtime** | Python 3 |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+
+### 3. Add environment variables
+
+In your Render service → Environment:
+
+```
+OPENAI_API_KEY = sk-...your-key...
+```
+
+### 4. Deploy
+
+Hit "Create Web Service" — Render will build and deploy automatically.
+
+---
+
+## Project Structure
+
+```
+focusai/
+├── main.py              # FastAPI app, personas, OpenAI calls
+├── templates/
+│   ├── index.html       # Upload page
+│   └── report.html      # Focus group report
+├── static/              # Static assets (CSS, JS if needed)
+├── requirements.txt
+├── .env.example
+└── README.md
+```
+
+---
+
+## Tech Stack
+
+- **Backend:** Python, FastAPI
+- **Frontend:** Jinja2 templates, vanilla HTML/CSS/JS
+- **AI:** OpenAI GPT-4o (vision)
+- **Deploy:** Render
+
+---
+
+## Cost Estimate
+
+Each analysis uses GPT-4o with vision (6 API calls — 5 personas + 1 moderator). Approximate cost per analysis: **~$0.05–0.15** depending on image size.
+
+---
+
+## POC Validation Goals
+
+This build tests:
+1. Do users find AI focus groups **believable**?
+2. Do they say "I hadn't thought of that" vs "generic AI advice"?
+3. Would marketers use this before launching ads?
+4. Would they pay for a deeper version?
