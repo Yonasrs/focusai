@@ -201,12 +201,35 @@ CRITICAL INSTRUCTIONS:
 6. If nothing in the ad matches your triggers, scores should be low. Do not be polite.
 {context}
 
+TRUST RUBRIC — apply this before setting trust_score:
+Start at 5 (neutral baseline). Then adjust:
+  +3 if you see named testimonials with real results
+  +2 if you see star ratings (e.g. 4.9/5)
+  +2 if you see large user counts (e.g. 50K+ users)
+  +1 if you see app screenshots or product UI
+  +1 if you see "no credit card" or free trial
+  +2 if you see money-back guarantee
+  −2 for every generic/vague claim with no proof ("transform your life")
+  −3 if there is NO visible proof at all
+  −2 for hype language ("best ever", "revolutionary", "amazing")
+Apply your persona multipliers: if you are Jordan, weight negative factors 1.5x. If you are Maya, weight negative factors 0.5x. If you are David, weight proof factors 1.2x.
+After applying rubric, write trust_factors_used showing your calculation.
+
+EXPLAINABLE SCORING — for every score, you MUST provide a 1-sentence reason:
+  attention_reason: why this exact attention score (what grabbed or failed to grab attention)
+  trust_reason: reference your trust rubric calculation explicitly
+  interest_reason: why this interest score (what triggered or killed purchase intent)
+
 Respond ONLY with valid JSON matching this exact structure (no markdown, no extra text):
 {{
   "first_reaction": "1-2 sentences that sound like you specifically, not a generic reviewer",
   "attention_score": <integer 1-10, apply your bias rules strictly>,
-  "trust_score": <integer 1-10, must reflect visual evidence actually seen in image>,
+  "attention_reason": "1 sentence: exactly what element drove this attention score",
+  "trust_score": <integer 1-10, result of trust rubric calculation>,
+  "trust_reason": "1 sentence referencing your rubric: e.g. +2 ratings +1 free trial -2 vague claims = 6",
+  "trust_factors_used": "compact rubric calc: e.g. base 5 +2 star ratings +1 no CC -2 generic claims = 6",
   "interest_score": <integer 1-10, apply your bias rules strictly>,
+  "interest_reason": "1 sentence: what specifically drove or killed purchase intent",
   "would_stop_scrolling": <true or false>,
   "visual_evidence_found": "List trust/proof elements you actually saw, or state none visible",
   "main_objection": "One specific objection based on what you actually see, not generic advice",
@@ -241,13 +264,19 @@ Respond ONLY with valid JSON:
 }}"""
 
 
-MODERATOR_PROMPT_V2 = """You are a senior advertising strategist moderating a focus group debrief. You have individual persona reactions AND a debate transcript. Your job is to synthesize everything into a decisive, opinionated executive report.
+MODERATOR_PROMPT_V2 = """You are a senior advertising strategist moderating a focus group debrief. You have individual persona reactions, a debate transcript, a copy intelligence audit, and a confidence analysis. Synthesize everything into a decisive executive report.
 
-PERSONA REACTIONS:
+PERSONA REACTIONS (with score reasoning and trust rubric calculations):
 {persona_feedback}
 
 DEBATE TRANSCRIPT:
 {debate_transcript}
+
+COPY INTELLIGENCE AUDIT:
+{copy_summary}
+
+CONFIDENCE & RELIABILITY DATA:
+{confidence_summary}
 
 Ad copy: {ad_copy}
 Target audience: {target_audience}
